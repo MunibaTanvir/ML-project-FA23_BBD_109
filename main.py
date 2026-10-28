@@ -19,16 +19,13 @@ clf_model = joblib.load("models/classification_model.joblib")
 SPECIES = ["setosa", "versicolor", "virginica"]
 
 
-# ---------------------------------------------------------------
 # Request bodies
 # Pydantic checks that the incoming JSON has these fields with the
 # right types. If not, FastAPI automatically returns an error.
-# ---------------------------------------------------------------
 class HouseInput(BaseModel):
     size: float      # square feet
     bedrooms: int
     age: float       # years
-
 
 class IrisInput(BaseModel):
     sepal_length: float
@@ -36,10 +33,7 @@ class IrisInput(BaseModel):
     petal_length: float
     petal_width: float
 
-
-# ---------------------------------------------------------------
 # Routes
-# ---------------------------------------------------------------
 @app.get("/")
 def home():
     # Serve the HTML page, so frontend and backend run from the same address
