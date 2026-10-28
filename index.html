@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ML Prediction App</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; }
+    form { border: 1px solid #ccc; padding: 16px; margin-bottom: 24px; border-radius: 6px; }
+    label { display: block; margin-top: 8px; }
+    input { width: 100%; padding: 6px; box-sizing: border-box; }
+    button { margin-top: 12px; padding: 8px 16px; }
+    .result { margin-top: 12px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>ML Prediction App</h1>
+
+  <!-- Form 1: house price (regression) -->
+  <form id="regForm">
+    <h2>House Price Prediction</h2>
+    <label>Size (sq ft) <input type="number" id="size" value="1500" required></label>
+    <label>Bedrooms <input type="number" id="bedrooms" value="3" required></label>
+    <label>Age (years) <input type="number" id="age" value="10" required></label>
+    <button type="submit">Predict Price</button>
+    <div class="result" id="regResult"></div>
+  </form>
+
+  <!-- Form 2: Iris species (classification) -->
+  <form id="clfForm">
+    <h2>Iris Species Prediction</h2>
+    <label>Sepal length (cm) <input type="number" step="0.1" id="sl" value="5.1" required></label>
+    <label>Sepal width (cm) <input type="number" step="0.1" id="sw" value="3.5" required></label>
+    <label>Petal length (cm) <input type="number" step="0.1" id="pl" value="1.4" required></label>
+    <label>Petal width (cm) <input type="number" step="0.1" id="pw" value="0.2" required></label>
+    <button type="submit">Predict Species</button>
+    <div class="result" id="clfResult"></div>
+  </form>
+
+  <script>
+    // Helper: send JSON to a backend endpoint and return the JSON reply
+    async function postJSON(url, body) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      return response.json();
+    }
+
+    // Helper: read a number from an input box by its id
+    function num(id) {
+      return Number(document.getElementById(id).value);
+    }
+
+    // When the house form is submitted...
+    document.getElementById("regForm").addEventListener("submit", async (event) => {
+      event.preventDefault(); // stop the page from reloading
+      const data = await postJSON("/predict/regression", {
+        size: num("size"),
+        bedrooms: num("bedrooms"),
+        age: num("age")
+      });
+      document.getElementById("regResult").textContent =
+        "Predicted price: $" + data.predicted_price.toLocaleString();
+    });
+
+    // When the iris form is submitted...
+    document.getElementById("clfForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = await postJSON("/predict/classification", {
+        sepal_length: num("sl"),
+        sepal_width: num("sw"),
+        petal_length: num("pl"),
+        petal_width: num("pw")
+      });
+      document.getElementById("clfResult").textContent =
+        "Predicted species: " + data.predicted_species;
+    });
+  </script>
+</body>
+</html>
