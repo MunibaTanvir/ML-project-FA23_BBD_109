@@ -29,7 +29,7 @@ models/            # saved .joblib models (created by train.py)
    ```
    uvicorn main:app --reload
    ```
-4. Open http://127.0.0.1:8000 in your browser and use the forms.
+4. Open http://127.0.0.1:8000 and use the forms.
 
 ## API endpoints
 
