@@ -19,13 +19,22 @@ clf_model = joblib.load("models/classification_model.joblib")
 SPECIES = ["setosa", "versicolor", "virginica"]
 
 
+# ---------------------------------------------------------------
 # Request bodies
 # Pydantic checks that the incoming JSON has these fields with the
 # right types. If not, FastAPI automatically returns an error.
+# ---------------------------------------------------------------
 class HouseInput(BaseModel):
-    size: float      # square feet
-    bedrooms: int
-    age: float       # years
+    # Same 8 features, in the same order, as the California Housing dataset
+    med_inc: float      # median income (tens of thousands of $)
+    house_age: float    # median house age (years)
+    ave_rooms: float    # average rooms per house
+    ave_bedrms: float   # average bedrooms per house
+    population: float   # people in the district
+    ave_occup: float    # average people per house
+    latitude: float
+    longitude: float
+
 
 class IrisInput(BaseModel):
     sepal_length: float
@@ -33,7 +42,10 @@ class IrisInput(BaseModel):
     petal_length: float
     petal_width: float
 
+
+# ---------------------------------------------------------------
 # Routes
+# ---------------------------------------------------------------
 @app.get("/")
 def home():
     # Serve the HTML page, so frontend and backend run from the same address
@@ -42,11 +54,14 @@ def home():
 
 @app.post("/predict/regression")
 def predict_regression(data: HouseInput):
-    # The model expects a 2D list: a list of rows, here just one row
-    features = [[data.size, data.bedrooms, data.age]]
+    # The model expects a 2D list: a list of rows, here just one row.
+    # The order must match the order the model was trained on.
+    features = [[data.med_inc, data.house_age, data.ave_rooms, data.ave_bedrms,
+                 data.population, data.ave_occup, data.latitude, data.longitude]]
     prediction = reg_model.predict(features)[0]
-    # Convert numpy float to a normal Python float so it can become JSON
-    return {"predicted_price": round(float(prediction), 2)}
+    # The dataset measures prices in units of $100,000, so convert to dollars.
+    # float() turns the numpy number into a normal Python number for JSON.
+    return {"predicted_price": round(float(prediction) * 100000, 2)}
 
 
 @app.post("/predict/classification")
