@@ -1,13 +1,12 @@
 # train.py
-# Trains two models and saves them to the "models" folder:
-#   1. Linear regression  -> predicts a house price (a number)
+# Trains two models on real datasets and saves them to the "models" folder:
+#   1. Linear regression   -> predicts a house price (a number)
 #   2. Logistic regression -> predicts an Iris flower species (a category)
 # Run with:  python train.py
 
 import os
-import numpy as np
 import joblib
-from sklearn.datasets import load_iris
+from sklearn.datasets import fetch_california_housing, load_iris
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, accuracy_score
@@ -17,25 +16,27 @@ os.makedirs("models", exist_ok=True)
 
 
 # ---------------------------------------------------------------
-# PART 1: REGRESSION (house price)
+# PART 1: REGRESSION (California house prices)
 # ---------------------------------------------------------------
-# We generate a small fake house dataset so no download is needed.
-# A fixed seed (42) means we get the same "random" data every run.
-rng = np.random.default_rng(42)
-n = 500  # number of houses
+# Real data from the 1990 US census: 20,640 districts in California.
+# The first run downloads it (about 400 KB) and caches it on your computer,
+# so later runs work offline.
+#
+# Each row is one district, with 8 features:
+#   MedInc     - median income of households (in tens of thousands of $)
+#   HouseAge   - median age of the houses (years)
+#   AveRooms   - average number of rooms per house
+#   AveBedrms  - average number of bedrooms per house
+#   Population - number of people living in the district
+#   AveOccup   - average number of people per house
+#   Latitude   - location (north/south)
+#   Longitude  - location (east/west)
+# Target: median house value, in units of $100,000 (so 2.5 means $250,000)
+housing = fetch_california_housing()
+X_reg = housing.data      # inputs: one row per district
+y_reg = housing.target    # what we want to predict: house value
 
-size = rng.uniform(500, 3500, n)      # house size in square feet
-bedrooms = rng.integers(1, 6, n)      # 1 to 5 bedrooms
-age = rng.uniform(0, 50, n)           # age of the house in years
-
-# The "true" price formula, plus some random noise so it looks realistic
-price = 50000 + 150 * size + 10000 * bedrooms - 1000 * age + rng.normal(0, 20000, n)
-
-# X = input features (one row per house), y = what we want to predict
-X_reg = np.column_stack([size, bedrooms, age])
-y_reg = price
-
-# Keep 20% of the data aside to test the model on houses it has never seen
+# Keep 20% of the data aside to test the model on districts it has never seen
 X_train, X_test, y_train, y_test = train_test_split(
     X_reg, y_reg, test_size=0.2, random_state=42
 )
@@ -44,7 +45,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 reg_model = LinearRegression()
 reg_model.fit(X_train, y_train)
 
-# R² score: 1.0 is perfect, 0 means "no better than guessing the average"
+# R² score: 1.0 is perfect, 0 means "no better than guessing the average".
+# Real data is messy, so expect around 0.6 here, which is normal for a
+# simple straight-line model on this dataset.
 r2 = r2_score(y_test, reg_model.predict(X_test))
 print(f"Regression R² score: {r2:.3f}")
 
@@ -55,7 +58,8 @@ joblib.dump(reg_model, "models/regression_model.joblib")
 # ---------------------------------------------------------------
 # PART 2: CLASSIFICATION (Iris species)
 # ---------------------------------------------------------------
-# The Iris dataset comes built into scikit-learn.
+# The Iris dataset is real data (150 flowers measured by botanist
+# Edgar Anderson) and comes bundled inside scikit-learn, no download needed.
 # Features: sepal length, sepal width, petal length, petal width (cm)
 # Target: 0 = setosa, 1 = versicolor, 2 = virginica
 iris = load_iris()
