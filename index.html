@@ -1,26 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>ML Prediction App</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; }
-    form { border: 1px solid #ccc; padding: 16px; margin-bottom: 24px; border-radius: 6px; }
-    label { display: block; margin-top: 8px; }
-    input { width: 100%; padding: 6px; box-sizing: border-box; }
-    button { margin-top: 12px; padding: 8px 16px; }
-    .result { margin-top: 12px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+    }
+
+    form {
+      border: 1px solid #ccc;
+      padding: 16px;
+      margin-bottom: 24px;
+      border-radius: 6px;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 8px 16px;
+    }
+
+    .result {
+      margin-top: 12px;
+      font-weight: bold;
+    }
   </style>
 </head>
+
 <body>
   <h1>ML Prediction App</h1>
 
   <!-- Form 1: house price (regression) -->
   <form id="regForm">
-    <h2>House Price Prediction</h2>
-    <label>Size (sq ft) <input type="number" id="size" value="1500" required></label>
-    <label>Bedrooms <input type="number" id="bedrooms" value="3" required></label>
-    <label>Age (years) <input type="number" id="age" value="10" required></label>
+    <h2>California House Price Prediction</h2>
+    <!-- Default values are the first district in the dataset (Berkeley area) -->
+    <label>Median income (tens of thousands $) <input type="number" step="any" id="medInc" value="8.33"
+        required></label>
+    <label>Median house age (years) <input type="number" step="any" id="houseAge" value="41" required></label>
+    <label>Average rooms per house <input type="number" step="any" id="aveRooms" value="6.98" required></label>
+    <label>Average bedrooms per house <input type="number" step="any" id="aveBedrms" value="1.02" required></label>
+    <label>Population of district <input type="number" step="any" id="population" value="322" required></label>
+    <label>Average people per house <input type="number" step="any" id="aveOccup" value="2.56" required></label>
+    <label>Latitude <input type="number" step="any" id="latitude" value="37.88" required></label>
+    <label>Longitude <input type="number" step="any" id="longitude" value="-122.23" required></label>
     <button type="submit">Predict Price</button>
     <div class="result" id="regResult"></div>
   </form>
@@ -56,9 +92,14 @@
     document.getElementById("regForm").addEventListener("submit", async (event) => {
       event.preventDefault(); // stop the page from reloading
       const data = await postJSON("/predict/regression", {
-        size: num("size"),
-        bedrooms: num("bedrooms"),
-        age: num("age")
+        med_inc: num("medInc"),
+        house_age: num("houseAge"),
+        ave_rooms: num("aveRooms"),
+        ave_bedrms: num("aveBedrms"),
+        population: num("population"),
+        ave_occup: num("aveOccup"),
+        latitude: num("latitude"),
+        longitude: num("longitude")
       });
       document.getElementById("regResult").textContent =
         "Predicted price: $" + data.predicted_price.toLocaleString();
@@ -78,4 +119,5 @@
     });
   </script>
 </body>
+
 </html>
